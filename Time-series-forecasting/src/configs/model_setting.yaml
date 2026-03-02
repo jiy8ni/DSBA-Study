@@ -1,0 +1,20 @@
+DLinear:
+  moving_avg: 25
+  enc_in: 125 
+  dropout: 0.1
+  individual: false
+
+TimesNet:
+  # architecture
+  d_model: 16        # 논문 공식 설정값
+  d_ff: 32           # 논문 공식 설정값
+  e_layers: 2        # TimesBlock 스택 수
+  top_k: 5           # long-term forecasting용 top-k 주기 수
+  num_kernels: 6     # Inception Block 커널 수
+  # input/output
+  enc_in: 7          # ETTh1 피처 수 (update_information에서 덮어씌워짐)
+  c_out: 7           # 출력 피처 수  (update_information에서 덮어씌워짐)
+  # embedding
+  embed: timeF       # 시간 피처 임베딩 방식
+  freq: h            # ETTh1은 시간 단위
+  dropout: 0.1       # 논문 공식 설정값
