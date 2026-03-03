@@ -10,7 +10,7 @@ accelerate launch main.py \
     --default_cfg ./configs/default_setting.yaml \
     --model_cfg ./configs/model_setting.yaml \
     DATASET.window_size $window_size \
-    DATASET.datadir $data_path \ 
+    DATASET.datadir $data_path \
     DATASET.dataname $data_name \
     DATASET.pred_len 96 \
     DEFAULT.exp_name forecasting_${data_name}_${window_size}_96 \
