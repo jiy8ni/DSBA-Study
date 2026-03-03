@@ -14,6 +14,7 @@
 ETT 데이터셋은 전력 변압기 온도 데이터를 기반으로 구성된 장기 시계열 예측 벤치마크 데이터
 - ETTh1, ETTh2: 1시간 단위로 측정
 - ETTm1, ETTm2: 15분 단위로 측정
+
 | Dataset | Frequency | Length | Description |
 |----------|------------|---------|--------------|
 | ETTh1 | Hourly | 17,420 | Transformer temperature (1) |
