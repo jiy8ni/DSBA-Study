@@ -5,6 +5,7 @@ import torch.fft
 
 from layers.Conv_Blocks import Inception_Block_V1
 from layers.Embed import DataEmbedding
+from layers.RevIN import RevIN
 
 def FFT_for_Period(x, k= 2):
     # [B, T, C]
@@ -87,6 +88,7 @@ class TimesNet(nn.Module):
         self.seq_len = getattr(configs, 'seq_len', 96)
         self.pred_len = getattr(configs, 'pred_len', 96)
         self.label_len = getattr(configs, 'label_len', 0)
+        self.revin = RevIN(configs.enc_in)
 
         # TimesBlock e_layers개 스택
         self.model = nn.ModuleList([
@@ -108,13 +110,8 @@ class TimesNet(nn.Module):
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
 
-        # Instance Normalization
-        means = x_enc.mean(1, keepdim=True).detach()
-        x_enc = x_enc - means
-        stdev = torch.sqrt(
-            torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5
-        ).detach()
-        x_enc = x_enc / stdev
+        # RevIN 적용
+        x_enc = self.revin(x_enc, 'norm')
 
         # Embedding
         enc_out = self.enc_embedding(x_enc, x_mark_enc) # (B, seq_len, d_model)
@@ -130,8 +127,7 @@ class TimesNet(nn.Module):
         dec_out = self.projection(enc_out) # (B, seq_len + pred_len, c_out)
 
         # Denormalization
-        dec_out = dec_out * stdev[:, 0, :].unsqueeze(1).repeat(1, self.seq_len + self.pred_len, 1)
-        dec_out = dec_out + means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len + self.pred_len, 1)
+        dec_out = self.revin(dec_out, 'denorm')
 
         return dec_out
 
