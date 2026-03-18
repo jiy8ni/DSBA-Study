@@ -37,6 +37,7 @@ ETT 데이터셋은 전력 변압기 온도 데이터를 기반으로 구성된 
 │   │       └── ETTm1.sh     # ETTm1 데이터셋 실험 실행 스크립트
 │   ├── layers/
 │   │   ├── Conv_Blocks.py   # Inception Block 등 컨볼루션 레이어
+│   │   ├── RevIN            # RevIN 레이어
 │   │   └── Embed.py         # Data Embedding 레이어
 │   ├── utils/
 │   │   ├── metrics.py       # MSE, MAE 등 평가 지표 계산
@@ -100,3 +101,25 @@ bash scripts/TimesNet/ETTh1.sh
 | ETTm2   | 0.2420 / 0.3156 | 0.291 / 0.333 |
 
 - ETTm2를 제외하고는 논문 reported 성능에 비해 오차가 큼> learning rate 조절 방식의 차이?
+
+
+## Results ( RevIN MSE / Original MSE)_0318study
+
+| Dataset  | 96        | 192       | 336       | 720       |
+|----------|-----------|-----------|-----------|-----------|
+| ETTh1    | 0.5410 / 0.5388 | 0.5757 / 0.5758 | 0.6265 / 0.6624 | 0.7249 / 0.7231 |  
+| ETTh2    | 0.2963 / 0.2964 | 0.3335 / 0.3328 | 0.4058 / 0.4099 | 0.4866 / 0.4880 |
+| ETTm1    | 0.4754 / 0.4771 | 0.5079 / 0.5053 | 0.5827 / 0.5864 | 0.6324 / 0.6348 |
+| ETTm2    | 0.1593 / 0.1592 | 0.2096 / 0.2094 | 0.2572 / 0.2603 | 0.3337 / 0.3389 | 
+
+- TimesNet 기존 모델에서 Instance Normalization을 manually 수행하던 것을 RevIN class를 사용하는 방식으로 코드를 변경한 것이기에, 실험 결과에는 큰 차이가 없었다. 
+
+**RevIN: Reversible Instance Normalization**
+
+RevIN이란, 시계열 데이터에서 발생하는 Distribution Shift(학습 데이터와 테스트 데이터의 통계적 특성이 변화하는 문제)를 해결하기 위한 방법론이다.
+
+시계열 데이터는 시간에 따라 평균과 분산이 변하는 Non-stationary의 성격을 갖는 경우가 많다. 이에 RevIN은 모델 입력 전에 데이터를 정규화하고, 모델의 출력 단계에서 이를 다시 역정규화하여 원래의 스케일로 복원한다. 
+
+- 기존 Instance Normalization과 달리 역변환 과정을 통해 정보 손실을 방지할 수 있음
+- 데이터의 경향성(Trend)이나 급격한 변화가 있는 시계열 예측에서 모델의 일반화 성능을 크게 향상시킴
+- Trainable Parameters: Scale과 Bias를 학습 가능(learnable)한 파라미터로 설정하여 데이터에 최적화된 정규화를 수행함
